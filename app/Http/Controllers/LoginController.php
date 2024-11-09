@@ -7,29 +7,20 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    public function showLoginForm()
+    public function login(Request $req)
     {
-            return view('login');
+        $credential = $req->only('username', 'password');
 
-    }
-    public function authenticate(Request $request)
-    {
-        //Validasi input login
-        $request->validate([
-            'username' => 'required',
-            'password' => 'required',
-        ]);
-
-        //Coba authentication user
-        $credentials = $request-> only('username', 'password');
-        if (auth::attempt($credentials)) {
-            //Jika login berhqsil, arahkan ke halaman daashboard atau halaman utama
-            return redirect()->intended('/admin/beranda');
+        if (Auth::attempt($credential)) {
+            //jika berhasil login, maka check rolenya
+            if (Auth::user()->role == 'admin') {
+                return redirect('/admin');
+            } else {
+                return redirect('/kasir');
+            }
+        } else {
+            //jika gagal login, kembalikan ke halaman login
+            return redirect('/');
         }
-
-        //Jika login gagal, kembalikan ke halaman login dengan pesasn error
-        return back()->withErrors([
-            'username' => 'Username atau password salah'
-        ]);
     }
 }
